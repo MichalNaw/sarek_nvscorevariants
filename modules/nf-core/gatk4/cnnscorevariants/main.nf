@@ -2,9 +2,9 @@ process GATK4_CNNSCOREVARIANTS {
     tag "$meta.id"
     label 'process_low'
 
-    //Conda is not supported at the moment: https://github.com/broadinstitute/gatk/issues/7811
-    //TODO:M:biocontainers aren't missing this package. Need to update it
-    container "nf-core/gatk:4.6.2.0" //Biocontainers is missing a package
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/gatk4:4.6.2.0--py310hdfd78af_0':
+        'biocontainers/gatk4:4.6.2.0--py310hdfd78af_0' }"
 
     input:
     tuple val(meta), path(vcf), path(tbi), path(aligned_input), path(intervals)
