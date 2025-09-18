@@ -1,4 +1,4 @@
-process GATK4_CNNSCOREVARIANTS {
+process GATK4_NVSCOREVARIANTS {
     tag "$meta.id"
     label 'process_low'
 
@@ -7,12 +7,9 @@ process GATK4_CNNSCOREVARIANTS {
         'biocontainers/gatk4:4.6.2.0--py310hdfd78af_0' }"
 
     input:
-    tuple val(meta), path(vcf), path(tbi), path(aligned_input), path(intervals)
+    tuple val(meta), path(vcf), path(tbi), path(aligned_input)
     path fasta
     path fai
-    path dict
-    path architecture
-    path weights
 
     output:
     tuple val(meta), path("*cnn.vcf.gz")    , emit: vcf
@@ -24,19 +21,17 @@ process GATK4_CNNSCOREVARIANTS {
 
     script:
     // Exit if running this module with -profile conda / -profile mamba
+    // In NVSCOREVARIANTS there is the same problem as with CNNSCOREVARIANTS because of some python packages
     if (workflow.profile.tokenize(',').intersect(['conda', 'mamba']).size() >= 1) {
-        error "GATK4_CNNSCOREVARIANTS module does not support Conda. Please use Docker / Singularity / Podman instead."
+        error "GATK4_NVSCOREVARIANTS module does not support Conda. Please use Docker / Singularity / Podman instead."
     }
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def aligned_input = aligned_input ? "--input $aligned_input" : ""
-    def interval_command = intervals ? "--intervals $intervals" : ""
-    def architecture = architecture ? "--architecture $architecture" : ""
-    def weights = weights ? "--weights $weights" : ""
 
     def avail_mem = 3072
     if (!task.memory) {
-        log.info '[GATK CnnScoreVariants] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this.'
+        log.info '[GATK NVScoreVariants] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this.'
     } else {
         avail_mem = (task.memory.mega*0.8).intValue()
     }
@@ -44,14 +39,11 @@ process GATK4_CNNSCOREVARIANTS {
     export THEANO_FLAGS="base_compiledir=\$PWD"
 
     gatk --java-options "-Xmx${avail_mem}M -XX:-UsePerfData" \\
-        CNNScoreVariants \\
+        NVScoreVariants \\
         --variant $vcf \\
         --output ${prefix}.cnn.vcf.gz \\
         --reference $fasta \\
-        $interval_command \\
         $aligned_input \\
-        $architecture \\
-        $weights \\
         --tmp-dir . \\
         $args
 

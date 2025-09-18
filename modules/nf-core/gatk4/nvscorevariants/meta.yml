@@ -1,7 +1,8 @@
-name: "gatk4_cnnscorevariants"
+name: "gatk4_nvscorevariants"
+# TODO: Description from gatk github
 description: Apply a Convolutional Neural Net to filter annotated variants
 keywords:
-  - cnnscorevariants
+  - nvscorevariants
   - gatk4
   - variants
 tools:
@@ -33,9 +34,6 @@ input:
         type: file
         description: BAM/CRAM file from alignment (optional)
         pattern: "*.{bam,cram}"
-    - intervals:
-        type: file
-        description: Bed file with the genomic regions included in the library (optional)
   - - fasta:
         type: file
         description: The reference fasta file
@@ -44,18 +42,6 @@ input:
         type: file
         description: Index of reference fasta file
         pattern: "*.fasta.fai"
-  - - dict:
-        type: file
-        description: GATK sequence dictionary
-        pattern: "*.dict"
-  - - architecture:
-        type: file
-        description: Neural Net architecture configuration json file (optional)
-        pattern: "*.json"
-  - - weights:
-        type: file
-        description: Keras model HD5 file with neural net weights. (optional)
-        pattern: "*.hd5"
 output:
   - vcf:
       - meta:
